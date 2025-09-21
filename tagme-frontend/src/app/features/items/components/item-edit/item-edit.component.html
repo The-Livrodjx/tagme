@@ -1,0 +1,115 @@
+<div class="edit-container">
+  <div class="edit-header">
+    <h2>Editar Item</h2>
+    <button type="button" class="btn btn-secondary" (click)="goBack()">
+      Voltar
+    </button>
+  </div>
+
+  <div *ngIf="loadingItem()" class="loading">
+    <div class="spinner"></div>
+    Carregando item...
+  </div>
+
+  <form
+    [formGroup]="itemForm"
+    (ngSubmit)="onSubmit()"
+    class="edit-form"
+    *ngIf="!loadingItem() && currentItem()">
+
+    <div class="form-group">
+      <label for="titulo">Título</label>
+      <input
+        id="titulo"
+        type="text"
+        class="form-control"
+        formControlName="titulo"
+        placeholder="Digite o título do item"
+        [class.error]="isFieldInvalid('titulo')">
+      <div class="error-message" *ngIf="isFieldInvalid('titulo')">
+        Título é obrigatório
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="descricao">Descrição</label>
+      <textarea
+        id="descricao"
+        class="form-control textarea"
+        formControlName="descricao"
+        placeholder="Digite a descrição do item"
+        rows="4">
+      </textarea>
+    </div>
+
+    <!-- Imagem atual -->
+    <div class="form-group" *ngIf="currentItem()?.photo">
+      <label>Foto Atual:</label>
+      <div class="current-image">
+        <img
+          [src]="getPhotoUrl(currentItem()!.photo)"
+          [alt]="currentItem()!.titulo || 'Item atual'"
+          class="current-photo"
+          (error)="onImageError($event)">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="photo">Nova Foto (opcional)</label>
+      <div class="file-input-container">
+        <input
+          #fileInput
+          id="photo"
+          type="file"
+          class="file-input"
+          accept="image/*"
+          (change)="onFileSelected($event)">
+        <button
+          type="button"
+          class="btn btn-file"
+          (click)="fileInput.click()">
+          {{ selectedFile() ? 'Alterar Foto' : 'Selecionar Nova Foto' }}
+        </button>
+        <span class="file-name" *ngIf="selectedFile()">
+          {{ selectedFile()?.name }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Preview da nova imagem -->
+    <div class="image-preview" *ngIf="imagePreview()">
+      <label>Preview da Nova Foto:</label>
+      <img [src]="imagePreview()" alt="Preview" class="preview-image">
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="resetForm()"
+        [disabled]="loadingSubmit()">
+        Cancelar Alterações
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="itemForm.invalid || loadingSubmit()">
+        {{ loadingSubmit() ? 'Salvando...' : 'Salvar Alterações' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="loadingSubmit()">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-state" *ngIf="!loadingItem() && !currentItem()">
+    <h3>Item não encontrado</h3>
+    <p>O item que você está tentando editar não foi encontrado.</p>
+    <button type="button" class="btn btn-primary" (click)="goBack()">
+      Voltar para lista
+    </button>
+  </div>
+</div>

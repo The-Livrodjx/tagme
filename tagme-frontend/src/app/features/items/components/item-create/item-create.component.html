@@ -1,0 +1,99 @@
+<div class="create-container">
+  <div class="create-header">
+    <h2>Criar Novo Item</h2>
+    <button type="button" class="btn btn-secondary" (click)="goBack()">
+      Voltar
+    </button>
+  </div>
+
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="create-form">
+    <div class="form-group">
+      <label for="titulo">Título</label>
+      <input
+        id="titulo"
+        type="text"
+        class="form-control"
+        formControlName="titulo"
+        placeholder="Digite o título do item"
+        [class.error]="isFieldInvalid('titulo') || hasServerError('titulo')">
+      <div class="error-message" *ngIf="isFieldInvalid('titulo')">
+        Título é obrigatório
+      </div>
+      <div class="error-message" *ngIf="hasServerError('titulo')">
+        <div *ngFor="let error of getServerErrors('titulo')">{{ error }}</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="descricao">Descrição</label>
+      <textarea
+        id="descricao"
+        class="form-control textarea"
+        formControlName="descricao"
+        placeholder="Digite a descrição do item"
+        rows="4"
+        [class.error]="hasServerError('descricao')">
+      </textarea>
+      <div class="error-message" *ngIf="hasServerError('descricao')">
+        <div *ngFor="let error of getServerErrors('descricao')">{{ error }}</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="photo">Foto</label>
+      <div class="file-input-container">
+        <input
+          #fileInput
+          id="photo"
+          type="file"
+          class="file-input"
+          accept="image/*"
+          (change)="onFileSelected($event)">
+        <button
+          type="button"
+          class="btn btn-file"
+          (click)="fileInput.click()">
+          {{ selectedFile() ? 'Alterar Foto' : 'Selecionar Foto' }}
+        </button>
+        <span class="file-name" *ngIf="selectedFile()">
+          {{ selectedFile()?.name }}
+        </span>
+      </div>
+      <div class="error-message" *ngIf="hasServerError('photo')">
+        <div *ngFor="let error of getServerErrors('photo')">{{ error }}</div>
+      </div>
+    </div>
+
+    <!-- Preview da imagem -->
+    <div class="image-preview" *ngIf="imagePreview()">
+      <label>Preview:</label>
+      <img [src]="imagePreview()" alt="Preview" class="preview-image">
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="resetForm()"
+        [disabled]="loading()">
+        Limpar
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="itemForm.invalid || loading()">
+        {{ loading() ? 'Criando...' : 'Criar Item' }}
+      </button>
+    </div>
+
+    <!-- Error message geral -->
+    <div class="alert alert-danger" *ngIf="errorMessage()">
+      <strong>Erro:</strong> {{ errorMessage() }}
+    </div>
+  </form>
+
+  <!-- Loading spinner -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="spinner"></div>
+  </div>
+</div>

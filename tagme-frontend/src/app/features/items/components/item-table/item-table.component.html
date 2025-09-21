@@ -1,0 +1,162 @@
+<div class="table-container">
+  <div class="table-header">
+    <h2>Items</h2>
+    <div class="header-actions">
+      <button type="button" class="btn btn-primary" (click)="createItem()">
+        + Novo Item
+      </button>
+      <div class="table-info">
+        Total: {{ meta?.totalItems || 0 }} items
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading &&meta?.totalItems == 0" class="empty-state">
+    <div class="empty-message">
+      <h3>Nenhum item cadastrado</h3>
+      <p>Comece criando seu primeiro item.</p>
+      <button type="button" class="btn btn-primary" (click)="createItem()">
+        + Criar Primeiro Item
+      </button>
+    </div>
+  </div>
+
+  <div class="table-wrapper" *ngIf="!loading; else loadingTemplate">
+    <table class="items-table" *ngIf="items.length > 0">
+      <thead>
+        <tr>
+          <th>Foto</th>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Descrição</th>
+          <th class="actions-column">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items; trackBy: trackByItemId" class="table-row">
+          <td>
+            <div class="photo-container">
+              <img
+                [src]="getPhotoUrl(item.photo)"
+                [alt]="item.titulo || 'Item'"
+                class="item-photo"
+                (error)="onImageError($event)">
+            </div>
+          </td>
+          <td class="id-cell">{{ item._id }}</td>
+          <td>
+            <span *ngIf="item.titulo; else noTitle" class="item-title">
+              {{ item.titulo }}
+            </span>
+            <ng-template #noTitle>
+              <span class="no-data">Sem título</span>
+            </ng-template>
+          </td>
+          <td>
+            <span *ngIf="item.descricao; else noDescription" class="item-description">
+              {{ item.descricao | slice:0:100 }}{{ item.descricao && item.descricao.length > 100 ? '...' : '' }}
+            </span>
+            <ng-template #noDescription>
+              <span class="no-data">Sem descrição</span>
+            </ng-template>
+          </td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                style="background: none"
+                (click)="editItem(item._id)"
+                title="Editar">
+                ✏️
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                style="background: none"
+                (click)="confirmDelete(item)"
+                [disabled]="deleting() === item._id"
+                title="Excluir">
+                {{ deleting() === item._id ? '⏳' : '🗑️' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  <div class="pagination" *ngIf="meta && meta.totalPages > 1">
+    <button
+      type="button"
+      class="btn btn-pagination"
+      [disabled]="loading || !meta || meta.currentPage <= 1"
+      (click)="changePage(meta.currentPage - 1)">
+      Anterior
+    </button>
+
+    <div class="page-numbers">
+      <ng-container *ngFor="let page of getPageNumbers(); trackBy: trackByPageNumber">
+        <button
+          type="button"
+          class="btn btn-page"
+          [class.active]="page === meta?.currentPage"
+          [disabled]="loading"
+          (click)="changePage(page)">
+          {{ page }}
+        </button>
+      </ng-container>
+    </div>
+
+    <span class="pagination-info" *ngIf="meta">
+      {{ meta.currentPage }} de {{ meta.totalPages }}
+    </span>
+
+    <button
+      type="button"
+      class="btn btn-pagination"
+      [disabled]="loading || !meta || meta.currentPage >= meta.totalPages"
+      (click)="changePage(meta.currentPage + 1)">
+      Próxima
+    </button>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading">
+      <div class="spinner"></div>
+      Carregando items...
+    </div>
+  </ng-template>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal-overlay" *ngIf="showDeleteModal()" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Confirmar Exclusão</h3>
+        <button type="button" class="btn-close" (click)="cancelDelete()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir o item:</p>
+        <p><strong>{{ itemToDelete()?.titulo || 'Item sem título' }}</strong></p>
+        <p class="warning">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="cancelDelete()"
+          [disabled]="deleting()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="deleteItem()"
+          [disabled]="deleting()">
+          {{ deleting() ? 'Excluindo...' : 'Confirmar Exclusão' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
